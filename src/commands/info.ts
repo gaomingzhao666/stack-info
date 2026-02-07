@@ -8,11 +8,8 @@ import { colors } from 'consola/utils'
 import { detectPackageManager } from 'nypm'
 import { resolve } from 'pathe'
 import { readPackageJSON, type PackageJson } from 'pkg-types'
-
 import { isBun, isDeno, isMinimal } from 'std-env'
 
-import { version as nuxiVersion } from '../../package.json'
-import { getBuilder } from '../utils/builder'
 import { formatInfoBox } from '../utils/formatting'
 import { getPackageManagerVersion } from '../utils/packageManager'
 
@@ -24,87 +21,59 @@ const cwdArgs = {
 		default: '.',
 	},
 } as const satisfies Record<string, ArgDef>
+
 export default defineCommand({
 	meta: {
 		name: 'info',
 		description: 'Get information about your project',
 	},
+
 	args: {
 		...cwdArgs,
 	},
+
 	async run(ctx) {
-		// Resolve rootDir
-		const cwd = resolve(ctx.args.cwd || ctx.args.rootDir)
+		const cwd = resolve(ctx.args.cwd || process.cwd())
 
-		// Load Nuxt config
-		const nuxtConfig = await getNuxtConfig(cwd)
-
-		// Find nearest package.json
 		const { dependencies = {}, devDependencies = {} } = await readPackageJSON(
 			cwd,
 		).catch(() => ({}) as PackageJson)
 
-		// Utils to query a dependency version
-		const nuxtPath = tryResolveNuxt(cwd)
-		async function getDepVersion(name: string) {
-			for (const url of [cwd, nuxtPath]) {
-				if (!url) {
-					continue
-				}
-				const pkg = await readPackageJSON(name, { url }).catch(() => null)
-				if (pkg) {
-					return pkg.version!
-				}
-			}
-			return dependencies[name] || devDependencies[name]
+		const allDeps = {
+			...dependencies,
+			...devDependencies,
 		}
 
-		async function listModules(arr: NonNullable<NuxtConfig['modules']> = []) {
-			const info: string[] = []
-			for (let m of arr) {
-				if (Array.isArray(m)) {
-					m = m[0]
-				}
-				const name = normalizeConfigModule(m, cwd)
-				if (name) {
-					const npmName = name!.split('/').splice(0, 2).join('/') // @foo/bar/baz => @foo/bar
-					const v = await getDepVersion(npmName)
-					info.push(`\`${v ? `${name}@${v}` : name}\``)
-				}
-			}
-			return info.join(', ')
+		function getDepVersion(name: string) {
+			return allDeps[name] || '-'
 		}
 
-		// Check Nuxt version
-		const nuxtVersion =
-			(await getDepVersion('nuxt')) ||
-			(await getDepVersion('nuxt-nightly')) ||
-			(await getDepVersion('nuxt-edge')) ||
-			(await getDepVersion('nuxt3')) ||
-			'-'
-		const isLegacy = nuxtVersion.startsWith('2')
-		const builder = !isLegacy
-			? nuxtConfig.builder /* latest schema */ || 'vite'
-			: (nuxtConfig as any) /* nuxt v2 */.bridge?.vite
-				? 'vite' /* bridge vite implementation */
-				: (nuxtConfig as any) /* nuxt v2 */.buildModules
-							?.includes('nuxt-vite')
-					? 'vite' /* nuxt-vite */
-					: 'webpack'
+		// detect prevail web frameworks
+		const frameworks =
+			[
+				{ name: 'Vue', pkg: 'vue' },
+				{ name: 'React', pkg: 'react' },
+				{ name: 'Svelte', pkg: 'svelte' },
+				{ name: 'Angular', pkg: '@angular/core' },
+				{ name: 'Nuxt', pkg: 'nuxt' },
+				{ name: 'Next.js', pkg: 'next' },
+				{ name: 'Astro', pkg: 'astro' },
+			]
+				.filter((f) => allDeps[f.pkg])
+				.map((f) => `${f.name}@${getDepVersion(f.pkg)}`)
+				.join(', ') || 'None detected'
 
+		// detect package manager
 		let packageManager = (await detectPackageManager(cwd))?.name
-
 		if (packageManager) {
 			packageManager += `@${getPackageManagerVersion(packageManager)}`
 		}
 
+		// detect OS info
 		const osType = os.type()
-		const builderInfo =
-			typeof builder === 'string'
-				? getBuilder(cwd, builder)
-				: { name: 'custom', version: '0.0.0' }
 
 		const infoObj = {
+			'Project root': cwd,
 			'Operating system':
 				osType === 'Darwin'
 					? `macOS ${os.release()}`
@@ -118,66 +87,46 @@ export default defineCommand({
 				: isDeno
 					? // @ts-expect-error Deno global
 						{ 'Deno version': Deno?.version.deno as string }
-					: { 'Node.js version': process.version as string }),
-			'nuxt/cli version': nuxiVersion,
+					: { 'Node.js version': process.version }),
 			'Package manager': packageManager ?? 'unknown',
-			'Nuxt version': nuxtVersion,
-			'Nitro version':
-				(await getDepVersion('nitropack')) || (await getDepVersion('nitro')),
-			Builder:
-				builderInfo.name === 'custom'
-					? 'custom'
-					: `${builderInfo.name.toLowerCase()}@${builderInfo.version}`,
-			Config: Object.keys(nuxtConfig)
-				.map((key) => `\`${key}\``)
-				.sort()
-				.join(', '),
-			Modules: await listModules(nuxtConfig.modules),
-			...(isLegacy
-				? {
-						'Build modules': await listModules(
-							(nuxtConfig as any) /* nuxt v2 */.buildModules || [],
-						),
-					}
-				: {}),
+			Frameworks: frameworks,
 		}
 
-		logger.info(
-			`Nuxt root directory: ${colors.cyan(nuxtConfig.rootDir || cwd)}\n`,
-		)
-
+		// info outputs
 		const boxStr = formatInfoBox(infoObj)
 
 		let firstColumnLength = 0
 		let secondColumnLength = 0
+
 		const entries = Object.entries(infoObj).map(([label, val]) => {
-			if (label.length > firstColumnLength) {
-				firstColumnLength = label.length + 4
-			}
-			if ((val || '').length > secondColumnLength) {
-				secondColumnLength = (val || '').length + 2
-			}
-			return [label, val || '-'] as const
+			firstColumnLength = Math.max(firstColumnLength, label.length + 4)
+			secondColumnLength = Math.max(secondColumnLength, String(val).length + 2)
+			return [label, String(val || '-')] as const
 		})
 
-		// formatted for copy-pasting into an issue
-		let copyStr = `| ${' '.repeat(firstColumnLength)} | ${' '.repeat(secondColumnLength)} |\n| ${'-'.repeat(firstColumnLength)} | ${'-'.repeat(secondColumnLength)} |\n`
+		let copyStr =
+			`| ${' '.repeat(firstColumnLength)} | ${' '.repeat(secondColumnLength)} |\n` +
+			`| ${'-'.repeat(firstColumnLength)} | ${'-'.repeat(secondColumnLength)} |\n`
+
 		for (const [label, value] of entries) {
 			if (!isMinimal) {
-				copyStr += `| ${`**${label}**`.padEnd(firstColumnLength)} | ${(value.includes('`') ? value : `\`${value}\``).padEnd(secondColumnLength)} |\n`
+				copyStr +=
+					`| ${`**${label}**`.padEnd(firstColumnLength)} | ` +
+					`${(value.includes('`') ? value : `\`${value}\``).padEnd(secondColumnLength)} |\n`
 			}
 		}
 
 		const copied =
 			!isMinimal &&
-			(await new Promise((resolve) =>
-				copyToClipboard(copyStr, (err) => resolve(!err)),
-			))
+			(await clipboard
+				.write(copyStr)
+				.then(() => true)
+				.catch(() => false))
 
 		if (copied) {
 			box(
 				`\n${boxStr}`,
-				` Nuxt project info ${colors.gray('(copied to clipboard) ')}`,
+				` Project info ${colors.gray('(copied to clipboard)')}`,
 				{
 					contentAlign: 'left',
 					titleAlign: 'left',
@@ -188,75 +137,7 @@ export default defineCommand({
 				},
 			)
 		} else {
-			logger.info(`Nuxt project info:\n${copyStr}`, { withGuide: false })
-		}
-
-		const isNuxt3 = !isLegacy
-		const isBridge = !isNuxt3 && infoObj['Build modules']?.includes('bridge')
-		const repo = isBridge ? 'nuxt/bridge' : 'nuxt/nuxt'
-		const docsURL =
-			isNuxt3 || isBridge ? 'https://nuxt.com' : 'https://v2.nuxt.com'
-		logger.info(`👉 Read documentation: ${colors.cyan(docsURL)}`)
-		if (isNuxt3 || isBridge) {
-			logger.info(
-				`👉 Report an issue: ${colors.cyan(`https://github.com/${repo}/issues/new?template=bug-report.yml`)}`,
-				{
-					spacing: 0,
-				},
-			)
-			logger.info(
-				`👉 Suggest an improvement: ${colors.cyan(`https://github.com/${repo}/discussions/new`)}`,
-				{
-					spacing: 0,
-				},
-			)
+			logger.info(`Project info:\n${copyStr}`)
 		}
 	},
 })
-
-function normalizeConfigModule(
-	module: NuxtModule<any, any> | string | false | null | undefined,
-	rootDir: string,
-): string | null {
-	if (!module) {
-		return null
-	}
-	if (typeof module === 'string') {
-		return module
-			.split(rootDir)
-			.pop()! // Strip rootDir
-			.split('node_modules')
-			.pop()! // Strip node_modules
-			.replace(/^\//, '')
-	}
-	if (typeof module === 'function') {
-		return `${module.name}()`
-	}
-	if (Array.isArray(module)) {
-		return normalizeConfigModule(module[0], rootDir)
-	}
-	return null
-}
-
-async function getNuxtConfig(rootDir: string) {
-	try {
-		const { createJiti } = await import('jiti')
-		const jiti = createJiti(rootDir, {
-			interopDefault: true,
-			// allow using `~` and `@` in `nuxt.config`
-			alias: {
-				'~': rootDir,
-				'@': rootDir,
-			},
-		})
-		;(globalThis as any).defineNuxtConfig = (c: any) => c
-		const result = (await jiti.import('./nuxt.config', {
-			default: true,
-		})) as NuxtConfig
-		delete (globalThis as any).defineNuxtConfig
-		return result
-	} catch {
-		// TODO: Show error as warning if it is not 404
-		return {}
-	}
-}

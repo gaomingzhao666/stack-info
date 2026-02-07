@@ -11,9 +11,13 @@
 	],
 	"license": "MIT",
 	"author": "gaomingzhao <gaomingzhao666@outlook.com> (https://github.com/gaomingzhao)",
+	"type": "module",
 	"main": "index.ts",
 	"scripts": {
 		"test": "test:dist"
+	},
+	"engines": {
+		"node": ">=22.0.0"
 	},
 	"dependencies": {
 		"@clack/prompts": "^1.0.0",

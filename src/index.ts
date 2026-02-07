@@ -1,13 +1,12 @@
 import { defineCommand, runMain } from 'citty'
-import { name, version, description } from '../package.json'
-
 import infoCommand from './commands/info'
 
 export const main = defineCommand({
 	meta: {
-		name,
-		version,
-		description,
+		name: 'stack-info',
+		version: '1.0.0',
+		description:
+			'print web stacks information for your project with command line',
 	},
 
 	subCommands: {

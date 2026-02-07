@@ -24,7 +24,8 @@
 		"nypm": "^0.6.5",
 		"pathe": "^2.0.3",
 		"pkg-types": "^2.3.0",
-		"semver": "^7.7.4"
+		"semver": "^7.7.4",
+		"std-env": "^3.10.0"
 	},
 	"devDependencies": {
 		"@types/clipboardy": "^2.0.4",

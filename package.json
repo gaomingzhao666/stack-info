@@ -11,8 +11,7 @@
 	],
 	"license": "MIT",
 	"author": "gaomingzhao <gaomingzhao666@outlook.com> (https://github.com/gaomingzhao)",
-	"type": "module",
-	"main": "index.js",
+	"main": "index.ts",
 	"scripts": {
 		"test": "test:dist"
 	},

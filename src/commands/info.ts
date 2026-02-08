@@ -56,7 +56,7 @@ export default defineCommand({
 				{ name: 'Svelte', pkg: 'svelte' },
 				{ name: 'Angular', pkg: '@angular/core' },
 				{ name: 'Nuxt', pkg: 'nuxt' },
-				{ name: 'Next.js', pkg: 'next' },
+				{ name: 'Next', pkg: 'next' },
 				{ name: 'Astro', pkg: 'astro' },
 			]
 				.filter((f) => allDeps[f.pkg])

@@ -15,10 +15,7 @@ export const main = defineCommand({
 		info: infoCommand,
 	},
 })
-
-export async function run() {
-	await runMain(main)
-}
+export const run = async () => await runMain(main)
 
 run().catch((err) => {
 	console.error(err)

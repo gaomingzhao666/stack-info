@@ -32,7 +32,7 @@ export default defineCommand({
 		...cwdArgs,
 	},
 
-	async run(ctx) {
+	run: async (ctx) => {
 		const cwd = resolve(ctx.args.cwd || process.cwd())
 
 		// read package.json and get deps

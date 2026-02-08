@@ -14,7 +14,8 @@
 	"type": "module",
 	"main": "index.ts",
 	"scripts": {
-		"test": "test:dist"
+		"build": "tsdown",
+		"prepack": "pnpm build"
 	},
 	"engines": {
 		"node": ">=22.0.0"

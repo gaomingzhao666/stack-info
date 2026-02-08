@@ -16,27 +16,21 @@ export async function getBuilder(cwd: string): Promise<BuilderInfo | null> {
 	}
 
 	const deps = {
-		...pkg.dependencies,
-		...pkg.devDependencies,
+		...(pkg.dependencies || {}),
+		...(pkg.devDependencies || {}),
 	}
 
-	function has(name: string) {
-		return Boolean(deps[name])
-	}
-
-	function version(name: string) {
-		return deps[name] || '-'
-	}
+	const has = (name: string) => Boolean(deps[name])
+	const versionOf = (name: string) => deps[name] ?? '-'
 
 	// Vite / Rolldown
 	if (has('vite')) {
-		// Rolldown sometimes masquerades as Vite-compatible
 		const isRolldown =
 			has('rolldown') || has('@rolldown/core') || has('vite-rolldown')
 
 		return {
 			name: isRolldown ? 'Rolldown (Vite-compatible)' : 'Vite',
-			version: version('vite'),
+			version: versionOf('vite'),
 		}
 	}
 
@@ -44,7 +38,7 @@ export async function getBuilder(cwd: string): Promise<BuilderInfo | null> {
 	if (has('@rspack/core') || has('rspack')) {
 		return {
 			name: 'Rspack',
-			version: version('@rspack/core') || version('rspack'),
+			version: versionOf('@rspack/core') || versionOf('rspack'),
 		}
 	}
 
@@ -52,7 +46,7 @@ export async function getBuilder(cwd: string): Promise<BuilderInfo | null> {
 	if (has('webpack')) {
 		return {
 			name: 'Webpack',
-			version: version('webpack'),
+			version: versionOf('webpack'),
 		}
 	}
 
@@ -60,10 +54,9 @@ export async function getBuilder(cwd: string): Promise<BuilderInfo | null> {
 	if (has('parcel')) {
 		return {
 			name: 'Parcel',
-			version: version('parcel'),
+			version: versionOf('parcel'),
 		}
 	}
 
-	// No builder detected
 	return null
 }

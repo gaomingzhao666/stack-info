@@ -13,7 +13,9 @@
 		"frontend",
 		"stack",
 		"vite",
-		"builder"
+		"builder",
+		"printer",
+		"command-line"
 	],
 	"license": "MIT",
 	"author": "gaomingzhao <gaomingzhao666@outlook.com> (https://github.com/gaomingzhao)",

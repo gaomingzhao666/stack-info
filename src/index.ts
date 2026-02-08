@@ -17,3 +17,8 @@ export const main = defineCommand({
 export async function run() {
 	await runMain(main)
 }
+
+run().catch((err) => {
+	console.error(err)
+	process.exit(1)
+})

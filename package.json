@@ -1,13 +1,19 @@
 {
 	"name": "stack-info",
 	"version": "1.0.0",
-	"description": "print web stacks information for your project with command line",
+	"description": "A cross-platform, framework-agnostic CLI for inspecting web project stacks in command line.",
 	"keywords": [
 		"cli",
 		"info",
+		"project-info",
+		"command-line",
+		"tool",
 		"web",
 		"framework",
-		"frontend"
+		"frontend",
+		"stack",
+		"vite",
+		"builder"
 	],
 	"license": "MIT",
 	"author": "gaomingzhao <gaomingzhao666@outlook.com> (https://github.com/gaomingzhao)",
@@ -17,8 +23,14 @@
 		"build": "tsdown",
 		"prepack": "pnpm build"
 	},
+	"bin": {
+		"stack-info": "./dist/index.mjs"
+	},
+	"files": [
+		"dist"
+	],
 	"engines": {
-		"node": ">=22.0.0"
+		"node": ">=18"
 	},
 	"dependencies": {
 		"@clack/prompts": "^1.0.0",

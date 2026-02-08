@@ -20,14 +20,15 @@
 	"license": "MIT",
 	"author": "gaomingzhao <gaomingzhao666@outlook.com> (https://github.com/gaomingzhao)",
 	"type": "module",
-	"main": "index.ts",
+	"main": "./dist/cli.mjs",
 	"scripts": {
 		"build": "tsdown",
 		"prepack": "pnpm build"
 	},
 	"bin": {
-		"stack-info": "./dist/index.mjs"
+		"stack-info": "./dist/cli.mjs"
 	},
+	"types": "./dist/cli.d.mts",
 	"files": [
 		"dist"
 	],

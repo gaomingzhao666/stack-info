@@ -10,8 +10,8 @@ import { resolve } from 'pathe'
 import { readPackageJSON, type PackageJson } from 'pkg-types'
 import { isBun, isDeno, isMinimal } from 'std-env'
 
-import { formatInfoBox } from '../utils/formatting'
-import { getPackageManagerVersion } from '../utils/packageManager'
+import { formatInfoBox } from '../utils/formatting.ts'
+import { getPackageManagerVersion } from '../utils/packageManager.ts'
 
 const cwdArgs = {
 	cwd: {

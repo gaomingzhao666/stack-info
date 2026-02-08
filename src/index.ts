@@ -1,5 +1,5 @@
 import { defineCommand, runMain } from 'citty'
-import infoCommand from './commands/info'
+import infoCommand from './commands/info.ts'
 
 export const main = defineCommand({
 	meta: {

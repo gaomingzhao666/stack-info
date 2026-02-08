@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { defineCommand, runMain } from 'citty'
 import infoCommand from './commands/info.ts'
 

@@ -28,7 +28,6 @@ export default defineCommand({
 		name: 'info',
 		description: 'Get information about your project',
 	},
-
 	args: {
 		...cwdArgs,
 	},

@@ -35,18 +35,16 @@ export default defineCommand({
 	async run(ctx) {
 		const cwd = resolve(ctx.args.cwd || process.cwd())
 
+		// read package.json and get deps
 		const { dependencies = {}, devDependencies = {} } = await readPackageJSON(
 			cwd,
 		).catch(() => ({}) as PackageJson)
-
 		const allDeps = {
 			...dependencies,
 			...devDependencies,
 		}
 
-		function getDepVersion(name: string) {
-			return allDeps[name] || '-'
-		}
+		const getDepVersion = (name: string) => allDeps[name] || '-'
 
 		// detect prevalent web frameworks
 		const frameworks =
@@ -65,9 +63,8 @@ export default defineCommand({
 
 		// detect package manager
 		let packageManager = (await detectPackageManager(cwd))?.name
-		if (packageManager) {
+		if (packageManager)
 			packageManager += `@${getPackageManagerVersion(packageManager)}`
-		}
 
 		// detect builder
 		const builder = await getBuilder(cwd)
@@ -75,9 +72,8 @@ export default defineCommand({
 			? `${builder.name}@${builder.version}`
 			: 'None detected'
 
-		// detect OS info
+		// detect OS info by node:os
 		const osType = os.type()
-
 		const infoObj = {
 			'Project root': cwd,
 			'Operating system':
@@ -104,24 +100,20 @@ export default defineCommand({
 
 		let firstColumnLength = 0
 		let secondColumnLength = 0
-
 		const entries = Object.entries(infoObj).map(([label, val]) => {
 			firstColumnLength = Math.max(firstColumnLength, label.length + 4)
 			secondColumnLength = Math.max(secondColumnLength, String(val).length + 2)
 			return [label, String(val || '-')] as const
 		})
-
 		let copyStr =
 			`| ${' '.repeat(firstColumnLength)} | ${' '.repeat(secondColumnLength)} |\n` +
 			`| ${'-'.repeat(firstColumnLength)} | ${'-'.repeat(secondColumnLength)} |\n`
 
-		for (const [label, value] of entries) {
-			if (!isMinimal) {
+		for (const [label, value] of entries)
+			if (!isMinimal)
 				copyStr +=
 					`| ${`**${label}**`.padEnd(firstColumnLength)} | ` +
 					`${(value.includes('`') ? value : `\`${value}\``).padEnd(secondColumnLength)} |\n`
-			}
-		}
 
 		const copied =
 			!isMinimal &&
@@ -129,8 +121,7 @@ export default defineCommand({
 				.write(copyStr)
 				.then(() => true)
 				.catch(() => false))
-
-		if (copied) {
+		if (copied)
 			box(
 				`\n${boxStr}`,
 				` Project info ${colors.gray('(copied to clipboard)')}`,
@@ -143,8 +134,6 @@ export default defineCommand({
 					rounded: true,
 				},
 			)
-		} else {
-			logger.info(`Project info:\n${copyStr}`)
-		}
+		else logger.info(`Project info:\n${copyStr}`)
 	},
 })

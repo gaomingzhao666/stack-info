@@ -12,6 +12,7 @@ import { isBun, isDeno, isMinimal } from 'std-env'
 
 import { formatInfoBox } from '../utils/formatting.ts'
 import { getPackageManagerVersion } from '../utils/packageManager.ts'
+import { getBuilder } from '../utils/builder.ts'
 
 const cwdArgs = {
 	cwd: {
@@ -48,7 +49,7 @@ export default defineCommand({
 			return allDeps[name] || '-'
 		}
 
-		// detect prevail web frameworks
+		// detect prevalent web frameworks
 		const frameworks =
 			[
 				{ name: 'Vue', pkg: 'vue' },
@@ -68,6 +69,12 @@ export default defineCommand({
 		if (packageManager) {
 			packageManager += `@${getPackageManagerVersion(packageManager)}`
 		}
+
+		// detect builder
+		const builder = await getBuilder(cwd)
+		const builderInfo = builder
+			? `${builder.name}@${builder.version}`
+			: 'None detected'
 
 		// detect OS info
 		const osType = os.type()
@@ -89,6 +96,7 @@ export default defineCommand({
 						{ 'Deno version': Deno?.version.deno as string }
 					: { 'Node.js version': process.version }),
 			'Package manager': packageManager ?? 'unknown',
+			Builder: builderInfo,
 			Frameworks: frameworks,
 		}
 

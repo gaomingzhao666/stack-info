@@ -6,7 +6,7 @@
 
 `@gaomingzhao666/stack-info`, a cross-platform, framework-agnostic CLI for inspecting web project stacks in command line.
 
-## Output Example
+## Output Example formatted by `Markdown`
 
 ```bash
 |                      |                                                              |
@@ -20,40 +20,22 @@
 | **Frameworks**       | `Vue@^3.5.17`                                                |
 ```
 
-## Installation
-
-```bash
-pnpm add -G @gaomingzhao666/stack-info
-```
-
-```bash
-npm install -G @gaomingzhao666/stack-info
-```
-
-```bash
-yarn global add @gaomingzhao666/stack-info
-```
-
-```bash
-bun add -g @gaomingzhao666/stack-info
-```
-
 ## Print Stack Info for Current Project
 
 ```bash
-pnpm @gaomingzhao666/stack-info info
+pnpm dlx @gaomingzhao666/stack-info info
 ```
 
 ```bash
-npm run @gaomingzhao666/stack-info info
+npx run @gaomingzhao666/stack-info info
 ```
 
 ```bash
-yarn @gaomingzhao666/stack-info info
+yarn dlx @gaomingzhao666/stack-info info
 ```
 
 ```bash
-bun @gaomingzhao666/stack-info info
+bun dlx @gaomingzhao666/stack-info info
 ```
 
 ## Features

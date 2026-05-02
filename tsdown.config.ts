@@ -1,5 +1,4 @@
-import { defineConfig } from 'tsdown'
-import type { UserConfig } from 'tsdown'
+import { defineConfig, type UserConfig } from 'tsdown'
 
 export default defineConfig({
 	entry: {

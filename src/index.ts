@@ -4,7 +4,7 @@ import infoCommand from './commands/info.ts'
 export const main = defineCommand({
 	meta: {
 		name: 'stack-info',
-		version: '1.0.1',
+		version: '1.0.2',
 		description:
 			'A cross-platform, framework-agnostic CLI for inspecting web project stacks in command line.',
 	},

@@ -7,7 +7,7 @@ export default defineConfig({
 	},
 	outDir: 'dist',
 	format: ['esm'],
-	target: 'node18',
+	target: 'node24',
 	clean: true,
 	dts: true,
 	banner: {
